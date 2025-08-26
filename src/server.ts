@@ -33,10 +33,9 @@ export async function start() {
     } catch (error) {
       console.log(error);
     }
-
     return server;
   } catch (err) {
-    console.log(err);
+    throw err;
   }
 }
 

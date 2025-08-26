@@ -8,7 +8,7 @@ function getComponentDir(component: string) {
 
 async function registerPublicRoutes(fastify: FastifyInstance) {
   // Public access routes
-  await fastify.register(autoload, getComponentDir('auth'));
+  //await fastify.register(autoload, getComponentDir('auth'));
   await fastify.register(autoload, getComponentDir('user'));
 
 
