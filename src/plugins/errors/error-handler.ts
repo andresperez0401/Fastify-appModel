@@ -25,6 +25,7 @@ export function handleError(
   let message = 'An unexpected error appeared';
   let type = 'default';
   let silent = false;
+  let details: unknown = undefined;
 
   if (error instanceof Exception) {
     silent = error.silent && productionEnv;
@@ -33,6 +34,9 @@ export function handleError(
     status = data.status;
     type = data.type;
     message = injectParams(data.message, error.params);
+    if (error.params?.details) {
+      details = error.params.details;
+    }
 
   }
 
@@ -43,6 +47,7 @@ export function handleError(
     status:  silent ? genericError.status  : status,
     type:     silent ? genericError.type    : type,
     code:     silent ? genericError.code    : (error instanceof Exception ? error.data.code : 'INTERNAL'),
+    ...(details ? { details } : {}),
   };
 
   reply.status(response.status).send(response);

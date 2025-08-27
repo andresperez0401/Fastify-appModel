@@ -25,6 +25,6 @@ export const userErrors = {
     type: 'CONFLICT_ERROR',
     code: 'PHONE_TAKEN',
     title: 'Teléfono ya registrado',
-    message: 'Este número de teléfono ya está asociado a una cuenta.',
+    message: 'El número de teléfono ya está asociado a una cuenta.',
   },
 } as const;

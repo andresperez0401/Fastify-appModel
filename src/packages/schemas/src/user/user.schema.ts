@@ -14,6 +14,5 @@ export const UserSchema = basicModelDefinition.extend({
     .object({
       areaCode: z.string().min(1, 'areaCode es requerido'),
       number:   z.string().min(1, 'number es requerido'),
-    })
-    .optional(),
+    }),
 });

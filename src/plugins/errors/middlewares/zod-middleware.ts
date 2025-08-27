@@ -18,7 +18,8 @@ export default fp(async (fastify: FastifyInstance) => {
           }));
 
           thrower.exception('internal', 'validation-error', {
-            message: details.map(d => `${d.field}: ${d.message}`).join('; ')
+            message: details.map(d => d.field).join(', '),
+            details,
           });
         }
       }
