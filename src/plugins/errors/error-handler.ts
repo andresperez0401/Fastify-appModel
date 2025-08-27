@@ -3,6 +3,8 @@ import { Exception } from '@/errors/exception';
 import { errorsDictionary, errorRegistry } from '@/errors/dictionaries';
 import { ZodError } from 'zod';
 
+
+//Esta función reemplaza los placeholders en el mensaje con los valores reales
 function injectParams(detail: string, params: Record<string, any>) {
   return Object.entries(params).reduce((acc, [key, value]) => {
     return acc.replace(`<${key}>`, String(value));
@@ -59,9 +61,8 @@ if (error instanceof ZodError) {
     title:   silent ? genericError.title   : title,
     message: silent ? genericError.message : message,
     status:  silent ? genericError.status  : status,
-    // opcional: type/code si quieres enviarlos al cliente:
-    // type:     silent ? genericError.type    : type,
-    // code:     silent ? genericError.code    : (error instanceof Exception ? error.data.code : 'INTERNAL'),
+    type:     silent ? genericError.type    : type,
+    code:     silent ? genericError.code    : (error instanceof Exception ? error.data.code : 'INTERNAL'),
   };
 
   reply.status(response.status).send(response);

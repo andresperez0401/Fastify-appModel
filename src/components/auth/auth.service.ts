@@ -23,6 +23,16 @@ class AuthService {
     //Metodo para registrar un nuevo usuario, en este caso lo crea con prisma.
     async signUp(args: TUserDTO['CreateUserInput']) {
         
+        //Verificamos si ya existe un usuario con el mismo email
+        const existingUser = await this.fastify.prisma.user.findUnique({
+            where: { email: args.email },
+        });
+
+        if (existingUser) {
+            //Si ya existe, lanzamos una excepción personalizada
+            thrower.exception('user', 'email-taken', { email: args.email });
+        }
+
         //Creamos el user con prisma
         const user = await this.fastify.prisma.user.create({
             data: {
