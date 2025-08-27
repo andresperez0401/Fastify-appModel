@@ -18,18 +18,24 @@ export function handleError(
 ) {
 
   // 1) Zod → validation-error (400), para cuando usamos el schema.parse, checkee y retorne en caso de algun error 
-  if (error instanceof ZodError) {
+if (error instanceof ZodError) {
   const e = errorsDictionary.internal['validation-error'];
 
   return reply.status(e.status).send({
     title: e.title,
-    message: e.message, // "La petición contiene datos inválidos"
+    message: e.message.replace(
+      '<message>',
+      error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(' | ')
+    ),
     status: e.status,
     code: e.code,
-    details: error.issues.map(i => ({
-      field: i.path.join('.'),
-      message: i.message,  // ← Aquí ya viene "firstName es requerido", "password mínimo 8 caracteres", etc.
-    })),
+
+
+    //Por si se quiere manejar mejor como detalles
+    // details: error.issues.map(i => ({
+    //   field: i.path.join('.'),
+    //   message: i.message,  // ← Aquí ya viene "firstName es requerido", "password mínimo 8 caracteres", etc.
+    // })),
   });
 }
 
