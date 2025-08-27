@@ -20,7 +20,12 @@ class AuthService {
         this.fastify = fastify;
     }
 
-    //Metodo para registrar un nuevo usuario, en este caso lo crea con prisma.
+
+// Metodos
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+//Metodo para registrar un nuevo usuario, en este metodo solo se valida si ya existe un usuario con el mismo email o teléfono
+
     async signUp(args: TUserDTO['CreateUserInput']) {
         
         //Verificamos si ya existe un usuario con el mismo email
@@ -33,14 +38,29 @@ class AuthService {
             thrower.exception('user', 'email-taken', { email: args.email });
         }
 
-        //Creamos el user con prisma
+        //Verificamos si ya existe un usuario con el mismo número de teléfono
+        if (args.phoneNumber) {
+            const existingPhoneUser = await this.fastify.prisma.user.findFirst({
+                where: { 
+                phoneNumber: {
+                    equals: JSON.parse(JSON.stringify(args.phoneNumber))
+                }
+                },
+            });
+
+            if (existingPhoneUser) {
+                thrower.exception('user', 'phone-taken', { phone: `${args.phoneNumber.areaCode}-${args.phoneNumber.number}` });
+            }
+        }
+        //Se crea el usuario con prisma
         const user = await this.fastify.prisma.user.create({
             data: {
                 ...args
             }});
-
         return user;
     }
+
+//------------------------------------------------------------------------------------------------------------------------------------------
 
     async signIn(email: string, password: string) {
         const user = await this.fastify.prisma.user.findUnique({ where: { email } });

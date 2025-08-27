@@ -18,6 +18,13 @@ async function registerAuthRoutes(fastify: FastifyInstance) {
     handler: fastify.authController.signUp,
   });
 
+
+  //de prueba
+  fastify.get('/all', async (request, reply) => {
+    const users = await fastify.prisma.user.findMany();
+    reply.send(users);
+  });
+
   //Ruta para el sign-in de un usuario
   fastify.post('/sign-in', fastify.authController.signIn);
 
