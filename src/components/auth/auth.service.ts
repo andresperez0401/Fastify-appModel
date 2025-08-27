@@ -1,6 +1,8 @@
 import fp from 'fastify-plugin';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { TUserDTO } from '@/packages/schemas/src/user/user.dto';
 
+//Le agregamos la propiedad authService al FastifyInstance
 declare module 'fastify' {
   interface FastifyInstance {
     authService: AuthService;
@@ -9,15 +11,23 @@ declare module 'fastify' {
 
 class AuthService {
 
+    //Se agrega el Fastify como atributo de la clase, para que pueda acceder a otros servicios dentro de Fastify
     private fastify: FastifyInstance;
 
     constructor(fastify: FastifyInstance) {
         this.fastify = fastify;
     }
 
-    async signUp(data: any) {
-        // Aquí puedes agregar lógica adicional, como enviar un correo de bienvenida
-        return this.fastify.userService.create(data);
+    //Metodo para registrar un nuevo usuario, en este caso lo crea con prisma.
+    async signUp(args: TUserDTO['CreateUserInput']) {
+        
+        //Creamos el user con prisma
+        const user = await this.fastify.prisma.user.create({
+            data: {
+                ...args
+            }});
+
+        return user;
     }
 
     async signIn(email: string, password: string) {
@@ -29,3 +39,9 @@ class AuthService {
         return 'fake-jwt-token'; // Reemplaza con la lógica real de generación de tokens
     }
 }
+
+export default fp(
+    async function (fastify: FastifyInstance){
+        fastify.decorate('authService', new AuthService(fastify));
+    }, 
+    { name: 'auth-service', dependencies: ['prisma-plugin'] });

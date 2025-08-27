@@ -4,6 +4,7 @@ import {
     TUserDTO, UserDTO
 }from '../../packages/schemas/src/user/user.dto';
 
+//Le agregamos la propiedad authController al FastifyInstance
 declare module 'fastify' {
   interface FastifyInstance {
     authController: AuthController;
@@ -12,24 +13,38 @@ declare module 'fastify' {
 
 class AuthController {
 
+    //Se agrega el Fastify como atributo de la clase, para que pueda acceder a otros servicios dentro de Fastify
     private fastify: FastifyInstance;
 
+    //Constructor de la clase, se le inyectara la dependencia de Fastify
     constructor(fastify: FastifyInstance) {
         this.fastify = fastify;
 
-    //Hay que bindear para que no pieda el contexto
+        //Hay que bindear los metodos para que no pierdan el contexto
         this.signUp = this.signUp.bind(this);
         this.signIn = this.signIn.bind(this);
     }
-  
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------
+// POST /auth/sign-up
+//Funcion que se encarga de orquestar hacia el servicio para crear un usuario, y recibe desde las rutas.
+
     async signUp(
-        //El request body pudiera ser ServerRequest en ves de FastifyRequest
+
+        //El request body pudiera ser ServerRequest en lugar de FastifyRequest
         request: FastifyRequest <{ Body: TUserDTO['CreateUserInput'] }>,
         reply: FastifyReply
     ) {
-        const user = await this.fastify.authService.signUp(request.body);
+        //Validamos que lo que se esta recibiendo cumple con el esquema
+        const data = UserDTO.createUserInput.parse(request.body);
+
+        //Llamamos al servicio para crear el usuario
+        const user = await this.fastify.authService.signUp(data);
         return user;
     }
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 
     async signIn(

@@ -10,8 +10,8 @@ export const UserSchema = basicModelDefinition.extend({
   birthDate:  z.string().datetime().optional(), 
   phoneNumber: z
     .object({
-      areaCode: z.string().min(1, 'phoneNumber.areaCode es requerido'),
-      number:   z.string().min(1, 'phoneNumber.number es requerido'),
+      areaCode: z.string().min(1, 'areaCode es requerido'),
+      number:   z.string().min(1, 'number es requerido'),
     })
     .optional(),
 });
