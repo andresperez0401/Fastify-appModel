@@ -1,6 +1,8 @@
 import fp from 'fastify-plugin';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { TUserDTO } from '@/packages/schemas/src/user/user.dto';
+import { thrower } from '@/errors/thrower';
+
 
 //Le agregamos la propiedad authService al FastifyInstance
 declare module 'fastify' {

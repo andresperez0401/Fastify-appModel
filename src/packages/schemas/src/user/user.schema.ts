@@ -1,5 +1,7 @@
+// user.schema.ts
 import { z } from 'zod';
 import { basicModelDefinition } from '../utils/basicDefinition';
+
 
 export const UserSchema = basicModelDefinition.extend({
   firstName:  z.string().min(1, 'firstName es requerido'),

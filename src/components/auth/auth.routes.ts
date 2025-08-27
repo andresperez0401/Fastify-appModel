@@ -1,8 +1,6 @@
 import fp from 'fastify-plugin';
 import type { FastifyInstance } from 'fastify';
-import {
-    TUserDTO, UserDTO
-}from '../../packages/schemas/src/user/user.dto';
+import { thrower } from '@/errors/thrower';
 
 
 async function registerAuthRoutes(fastify: FastifyInstance) {
@@ -12,6 +10,11 @@ async function registerAuthRoutes(fastify: FastifyInstance) {
 
   //Ruta para el sign-in de un usuario
   fastify.post('/sign-in', fastify.authController.signIn);
+
+  fastify.get('/test-error', async (request, reply) => {
+    // Simulamos un error para probar el manejador de errores
+     thrower.exception('user', 'not-found', { id: 123 });
+  });
 
 }
 

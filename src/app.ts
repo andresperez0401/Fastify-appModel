@@ -1,7 +1,8 @@
 import type { Server } from 'node:http';
 import path from 'path';
-import Fastify, { type FastifyHttpOptions } from 'fastify';
+import Fastify, { fastify, type FastifyHttpOptions } from 'fastify';
 import autoload from '@fastify/autoload';
+import { handleError } from '@/plugins/errors/error-handler';
 
 export async function createApp() {
   let config: FastifyHttpOptions<Server> = 
@@ -21,6 +22,9 @@ export async function createApp() {
 };
 //   { logger: true };
   const app = Fastify(config);
+
+  app.setErrorHandler(handleError);
+  
 
   // Register plugins
 //   await app.register(autoload, {
