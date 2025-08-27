@@ -35,11 +35,8 @@ class AuthController {
         request: FastifyRequest <{ Body: TUserDTO['CreateUserInput'] }>,
         reply: FastifyReply
     ) {
-        //Validamos que lo que se esta recibiendo cumple con el esquema
-        const data = UserDTO.createUserInput.parse(request.body);
-
         //Llamamos al servicio para crear el usuario
-        const user = await this.fastify.authService.signUp(data);
+        const user = await this.fastify.authService.signUp(request.body);
         return user;
     }
 

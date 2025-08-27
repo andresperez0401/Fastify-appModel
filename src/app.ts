@@ -20,9 +20,10 @@ export async function createApp() {
     }
   }
 };
-//   { logger: true };
+
   const app = Fastify(config);
 
+  //Manejo de errores con el handler en: plugins/errors
   app.setErrorHandler(handleError);
   
 
@@ -30,14 +31,26 @@ export async function createApp() {
 //   await app.register(autoload, {
 //     dir: path.join(__dirname, 'plugins/middlewares'),
 //   });
+
+
+  //Carga de todos los plugins de integraciones, aca esta incluido Prisma
   await app.register(autoload, {
     dir: path.join(__dirname, 'plugins/integrations'),
   });
 
-  // Register Routes and Websockets
+
+  //Carga de los plugins de errores
+  await app.register(autoload, {
+    dir: path.join(__dirname, 'plugins/errors' )
+  });
+
+
+
+  // Registro de las rutas
   await app.register(autoload, {
     dir: path.join(__dirname, 'plugins/routes'),
   });
+
 
   // Register error handlers
 //   await app.register(autoload, {

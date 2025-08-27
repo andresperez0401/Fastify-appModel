@@ -2,6 +2,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Exception } from '@/errors/exception';
 import { errorsDictionary, errorRegistry } from '@/errors/dictionaries';
 import { ZodError } from 'zod';
+import { de } from 'zod/v4/locales';
 
 
 //Esta función reemplaza los placeholders en el mensaje con los valores reales
@@ -19,28 +20,6 @@ export function handleError(
   reply: FastifyReply
 ) {
 
-  // 1) Zod → validation-error (400), para cuando usamos el schema.parse, checkee y retorne en caso de algun error 
-if (error instanceof ZodError) {
-  const e = errorsDictionary.internal['validation-error'];
-
-  return reply.status(e.status).send({
-    title: e.title,
-    message: e.message.replace(
-      '<message>',
-      error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(' | ')
-    ),
-    status: e.status,
-    code: e.code,
-
-
-    //Por si se quiere manejar mejor como detalles
-    // details: error.issues.map(i => ({
-    //   field: i.path.join('.'),
-    //   message: i.message,  // ← Aquí ya viene "firstName es requerido", "password mínimo 8 caracteres", etc.
-    // })),
-  });
-}
-
   let title = 'Unhandled server error';
   let status = 500;
   let message = 'An unexpected error appeared';
@@ -54,6 +33,7 @@ if (error instanceof ZodError) {
     status = data.status;
     type = data.type;
     message = injectParams(data.message, error.params);
+
   }
 
   const genericError = errorRegistry.getError('internal', 'default' as any);
@@ -66,5 +46,4 @@ if (error instanceof ZodError) {
   };
 
   reply.status(response.status).send(response);
-  return reply;
 }
