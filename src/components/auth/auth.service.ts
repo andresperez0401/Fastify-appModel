@@ -1,7 +1,9 @@
 import fp from 'fastify-plugin';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { TUserDTO } from '@/packages/schemas/src/user/user.dto';
+import { TAuthDTO } from '@/packages/schemas/src/auth/auth.dto';
 import { thrower } from '@/errors/thrower';
+import { hash } from '@/lib/encryptor';
 
 
 //Le agregamos la propiedad authService al FastifyInstance
@@ -26,8 +28,8 @@ class AuthService {
 //------------------------------------------------------------------------------------------------------------------------------------------
 //Metodo para registrar un nuevo usuario, en este metodo solo se valida si ya existe un usuario con el mismo email o teléfono
 
-    async signUp(args: TUserDTO['CreateUserInput']) {
-        
+    async signUp(args: TAuthDTO['signUpInput']) {
+
         //Verificamos si ya existe un usuario con el mismo email
         const existingUser = await this.fastify.prisma.user.findUnique({
             where: { email: args.email },
@@ -49,9 +51,11 @@ class AuthService {
             });
 
             if (existingPhoneUser) {
-                thrower.exception('user', 'phone-taken', { phone: `${args.phoneNumber.areaCode}-${args.phoneNumber.number}` });
+                thrower.exception('user', 'phone-taken');
             }
         }
+
+        args.password = await hash(args.password);
         //Se crea el usuario con prisma
         const user = await this.fastify.prisma.user.create({
             data: {

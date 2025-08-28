@@ -3,6 +3,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import {
     TUserDTO, UserDTO
 }from '../../packages/schemas/src/user/user.dto';
+import { TAuthDTO, AuthDTO } from '@/packages/schemas/src/auth/auth.dto';
 
 //Le agregamos la propiedad authController al FastifyInstance
 declare module 'fastify' {
@@ -32,7 +33,7 @@ class AuthController {
     async signUp(
 
         //El request body pudiera ser ServerRequest en lugar de FastifyRequest
-        request: FastifyRequest <{ Body: TUserDTO['CreateUserInput'] }>,
+        request: FastifyRequest <{ Body: TAuthDTO['signUpInput'] }>,
         reply: FastifyReply
     ) {
         //Llamamos al servicio para crear el usuario
