@@ -13,7 +13,7 @@ async function registerAuthRoutes(fastify: FastifyInstance) {
   
     //Se le pasa el schema en el body, para que pueda tener la prevalidación con el middleware de Zod: Plugins/errors/middlewares
     config: {
-        zodSchema: UserDTO.createUserInput,
+        inputSchema: UserDTO.createUserInput,
     },
     handler: fastify.authController.signUp,
   });

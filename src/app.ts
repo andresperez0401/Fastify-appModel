@@ -51,12 +51,6 @@ export async function createApp() {
     dir: path.join(__dirname, 'plugins/routes'),
   });
 
-
-  // Register error handlers
-//   await app.register(autoload, {
-//     dir: path.join(__dirname, 'plugins/errors'),
-//   });
-
   await app.ready();
 
   return app;
