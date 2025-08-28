@@ -33,6 +33,11 @@ export async function generateSession(
   const session: SessionDTO = {
     token, 
     userId: String(user.id),
+
+    //Agregamos el userType a la sesion para que no se tenga que repetir la clase session por cada middleware
+    //La idea es tener un middleware de Admin y otro de User y que ambos registren en la session 
+    userType: user.type,
+    ip,
     device: {
       os: browser.os || 'unknown',
       browser: browser.name || 'unknown',
@@ -48,8 +53,7 @@ export async function generateSession(
       continentCode: ipLocation.continentCode || '',
       timezone: ipLocation.timezone || '',
       countryLanguages: ipLocation.countryLanguages || ['en-US'],
-    },
-    ip,
+    }
   };
 
   return session;

@@ -27,6 +27,7 @@ export const sessionDefinition = basicModelDefinition.extend({
   expirationDate: z.date(),
   location: sessionLocation.optional(),
   userId: z.string(),
+  userType: z.enum(['admin', 'professor'])
 });
 
 export const sessionCreateInput = sessionDefinition.omit({
