@@ -78,6 +78,8 @@ class AuthService {
                  ip: string) {
 
         const user = await this.fastify.prisma.user.findUnique({ where: { email: args.email } });
+
+        console.log(browser)
         
         if (!user || !(await compareHash(user.password, args.password))) {
             thrower.exception('auth', 'invalid-credentials');

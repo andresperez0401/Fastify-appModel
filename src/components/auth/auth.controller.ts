@@ -1,10 +1,12 @@
 import fp from 'fastify-plugin';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import browserDetect from 'browser-detect';
+import { UAParser}  from 'ua-parser-js';
 import {
     TUserDTO, UserDTO
 }from '../../packages/schemas/src/user/user.dto';
 import { TAuthDTO, AuthDTO,  } from '@/packages/schemas/src/auth/auth.dto';
+import { BrowserDetectInfo } from '@/types/browser';
 
 //Le agregamos la propiedad authController al FastifyInstance
 declare module 'fastify' {
@@ -70,6 +72,19 @@ class AuthController {
 
         //Detectamos el navegador desde el user-agent
         const browser = browserDetect(request.headers['user-agent']);
+        // const parser = new UAParser(request.headers['user-agent']);
+        const ua = request.headers['user-agent'] || '';
+        console.log("UA recibido:", ua);
+        // const result = parser.getResult();
+
+        // const browser: BrowserDetectInfo = {
+        //     os: result.os.name || "unknown",
+        //     browser: result.browser.name || "unknown",
+        //     name: result.browser.name || "unknown", 
+        //     version: result.browser.version || "unknown",
+        //     isMobile: result.device.type === "mobile",
+        // };
+
 
         //Obtenemos la IP del request
         const ip = request.ip;
