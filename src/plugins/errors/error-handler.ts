@@ -23,7 +23,7 @@ export function handleError(
   let title = 'Unhandled server error';
   let status = 500;
   let message = 'An unexpected error appeared';
-  let type = 'default';
+  let type = 'DEFAULT_ERROR';
   let silent = false;
   let details: unknown = undefined;
 

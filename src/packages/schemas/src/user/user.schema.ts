@@ -9,10 +9,10 @@ export const UserSchema = basicModelDefinition.extend({
   email:      z.string().email('email inválido'),
   password:   z.string().min(8, 'password mínimo 8 caracteres'),
   type:       z.enum(['admin', 'professor']),
-  birthDate:  z.string().datetime().optional(), 
+  birthDate:  z.coerce.date(),
   phoneNumber: z
     .object({
       areaCode: z.string().min(1, 'areaCode es requerido'),
       number:   z.string().min(1, 'number es requerido'),
-    }),
+    }).optional(),
 });

@@ -21,13 +21,13 @@ export const sessionLocation = z.object({
 export type SessionLocation = z.infer<typeof sessionLocation>;
 
 export const sessionDefinition = basicModelDefinition.extend({
-  ip: z.string().max(45), 
   token: z.string().max(999),
+  userId: z.string().uuid(),
+  userType: z.enum(["admin", "professor"]),
+  ip: z.string().max(45),
   device: sessionDevice,
   expirationDate: z.date(),
   location: sessionLocation.optional(),
-  userId: z.string(),
-  userType: z.enum(['admin', 'professor'])
 });
 
 export const sessionCreateInput = sessionDefinition.omit({
@@ -37,8 +37,8 @@ export const sessionCreateInput = sessionDefinition.omit({
   active: true,
 });
 
-export type SessionDTO = z.infer<typeof sessionCreateInput>;
-
+export type SessionDTO = z.infer<typeof sessionDefinition>;
+export type SessionCreateInput = z.infer<typeof sessionCreateInput>;
 
 export type JwtUserPayload = {
   id: string;

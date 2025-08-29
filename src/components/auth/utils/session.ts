@@ -1,8 +1,9 @@
 import jwt from "jsonwebtoken";
 import { BrowserDetectInfo } from "@/types/browser";
 import { getGeoLocationFromIP } from "@/utils/ip-location";
-import { SessionDTO, JwtUserPayload} from "@/packages/schemas/src/user/session/session.schema";
+import { SessionDTO, SessionCreateInput,  JwtUserPayload} from "@/packages/schemas/src/user/session/session.schema";
 import { TUserDTO } from "@/packages/schemas/src/user/user.dto";
+import { thrower } from '@/errors/thrower';
 
 
 export async function generateSession(
@@ -10,9 +11,6 @@ export async function generateSession(
   browser: BrowserDetectInfo,
   ip: string
 ) {
-
-  //Validamos que la variable de entorno Secret este configurada
-  if (!process.env.SECRET) throw new Error("SECRET not configured");
 
   //Agregamos la informacion que queremos en el payload del token
   const tokenPayload: JwtUserPayload = {
@@ -22,7 +20,7 @@ export async function generateSession(
   };
 
   //Firmamos el token con la libreria jsonwebtoken
-  const token = jwt.sign(tokenPayload, process.env.SECRET 
+  const token = jwt.sign(tokenPayload, process.env.SECRET!
     // , { expiresIn: "1d", // opcional}
   );
 
@@ -30,7 +28,7 @@ export async function generateSession(
   const ipLocation = await getGeoLocationFromIP(ip);
 
 
-  const session: SessionDTO = {
+  const session: SessionCreateInput = {
     token, 
     userId: String(user.id),
 

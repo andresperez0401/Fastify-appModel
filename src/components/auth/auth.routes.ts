@@ -1,23 +1,50 @@
 import fp from 'fastify-plugin';
 import type { FastifyInstance } from 'fastify';
 import { thrower } from '@/errors/thrower';
-import { UserDTO } from '@/packages/schemas/src/user/user.dto';
+import { AuthDTO } from '@/packages/schemas/src/auth/auth.dto';
 
 
 //Funcion que registra las rutas públics de Auth
 async function registerAuthRoutes(fastify: FastifyInstance) {
 
-
+//-------------------------------------------------------------------------------------------------------------------------------------------   
   //Ruta para el registro de un usuario
   fastify.post('/sign-up', {
   
     //Se le pasa el schema en el body, para que pueda tener la prevalidación con el middleware de Zod: Plugins/errors/middlewares
     config: {
-        inputSchema: UserDTO.createUserInput,
+        inputSchema: AuthDTO.signUpInput,
     },
     handler: fastify.authController.signUp,
   });
 
+//-------------------------------------------------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//Ruta para validar si un email de un usuario ya esta registrado en la base de datos 
+fastify.post('/check-email', {
+
+    config: {
+      inputSchema: AuthDTO.emailInput,
+    },
+    handler: fastify.authController.checkEmail,
+  });
+
+//-------------------------------------------------------------------------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------------------------------------------------------
+// Ruta para hacer Login en la aplicacion 
+fastify.post('/sign-in', {
+
+    config: {
+        inputSchema: AuthDTO.logInInput,
+        },
+    handler: fastify.authController.signIn,
+  });
+
+//---------------------------------------------------------------------------------------------------------------------------
 
   //de prueba
   fastify.get('/all', async (request, reply) => {
@@ -25,8 +52,6 @@ async function registerAuthRoutes(fastify: FastifyInstance) {
     reply.send(users);
   });
 
-  //Ruta para el sign-in de un usuario
-  fastify.post('/sign-in', fastify.authController.signIn);
 
   fastify.get('/test-error', async (request, reply) => {
     // Simulamos un error para probar el manejador de errores

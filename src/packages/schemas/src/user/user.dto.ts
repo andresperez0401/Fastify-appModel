@@ -17,8 +17,10 @@ const sessionUserInput = UserSchema.pick({
     firstName: true,
     lastName: true,
     email: true,
+    phoneNumber: true,
     type: true,
 });
+
 
 //este es el dto que se utilizara en el servicio y controlador
 export interface TUserDTO {

@@ -1,16 +1,22 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum ReactionReferenceTypesEnum {
+  blog
+  message
+}
+
+enum ReactionTypesEnum {
+  like
 }
 
 enum UserTypeEnum {
@@ -18,9 +24,177 @@ enum UserTypeEnum {
   professor
 }
 
-enum UserStatusEnum {
+enum AdminTypeEnum {
+  super_admin
+  admin
+  auditor
+  operator
+}
+
+enum TeachingLevelEnum {
+  elementary_school
+  high_school
+  college
+  preeschool
+}
+
+enum NotificationTypeEnum {
+  new_follower
+  new_message
+  new_event
+}
+
+enum GroupInvitationStatusEnum {
+  pending
+  accepted
+  rejected
+}
+
+enum MemberPermissionsEnum {
+  principal
+  admin
+  member
+}
+
+enum ReportReferenceTypesEnum {
+  blog
+  group
+  message
+  user
+}
+
+enum ReportStatusEnum {
+  pending
+  reviewed
+}
+
+enum SavedItemTypesEnum {
+  blog
+  content
+  message
+}
+
+enum InstitutionTypeEnum {
+  private
+  public
+}
+
+enum ReferralInvitationStatus {
+  pending
+  completed
+}
+
+enum SourceTypeEnum {
+  challenge
+  league
+}
+
+enum ActionTypeEnum {
+  complete_content
+  follow_user
+  like_post
+  share_content
+  create_group
+  comment_post
+  rate_content
+  invite_new_user
+  complete_profile
+  first_post
+  join_group
+  write_blog
+  featured_post
+}
+
+enum ChallengeTypeEnum {
+  one_time
+  daily
+  weekly
+  infinite
+}
+
+enum ChallengeStateEnum {
+  in_progress
+  achieved
+  expired
+}
+
+enum EventTypeEnum {
+  on_site
+  remote
+}
+
+enum EventOwnerTypeEnum {
+  personal
+  general
+}
+
+enum InviteStatusEnum {
+  accepted
+  rejected
+  pending
+}
+
+enum ContentModalityEnum {
+  remote
+  on_site
+  hybrid
+}
+
+enum ContentDifficultyEnum {
+  beginner
+  intermediate
+  experienced
+}
+
+enum ContentTypeEnum {
+  course
+  document
+  presentation
+  video
+  GUAO
+}
+
+enum UserContentStatusEnum {
+  in_progress
+  completed
+}
+
+enum BlogPostStatusEnum {
+  published
+  draft
+}
+
+enum NotificationReferenceTypeEnum {
+  user
+  message
+  event
+}
+
+enum RedeemedItemStatus {
   active
-  inactive
+  expired
+  used
+}
+
+enum StoreItemTypesEnum {
+  coupon
+  video_conference
+  system_content
+}
+
+enum UserNotificationStatusEnum {
+  unread
+  read
+  hidden
+}
+
+enum BlogStructureTypeEnum {
+  title
+  subtitle
+  paragraph
+  image
+  quote
+  video
 }
 
 model User {
@@ -29,13 +203,825 @@ model User {
   lastName    String
   email       String       @unique
   password    String
-  birthDate   DateTime?
-  phoneNumber Json?        // { "areaCode": string, "number": string }
+  birthDate   DateTime
+  phoneNumber Json? // { "areaCode": string, "number": string }
   type        UserTypeEnum
-  status      UserStatusEnum @default(active)
   active      Boolean      @default(true)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
+  admin                   Admin?
+  professor               Professor?
+  privacyPreferences      PrivacyPreferences?
+  notificationPreferences NotificationPreferences?
+  teachingResume          TeachingResume?
+  userTopics              UserTopic[]
+  groupFounder            Group[]
+  groupMembers            GroupMember[]
+  groupInvitations        GroupInvitation[]
+  messages                Message[]
+  reactions               Reaction[]
+  reports                 Report[]
+  savedItems              SavedItem[]
+  follows                 Follow[]                 @relation("Follower")
+  followedBy              Follow[]                 @relation("Followed")
+  referrals               UserReferral[]           @relation("Referrer")
+  referred                UserReferral[]           @relation("Referred")
+  ratings                 Rating[]
+  userContents            UserContent[]
+  hExperiences            HExperience[]
+  hUserLeagues            HUserLeague[]
+  userChallenges          UserChallenge[]
+  userBadges              UserBadge[]
+  userExperience          UserExperience?
+  eventsOwned             Event[]
+  eventsGuest             UserEvent[]
+  redeemedItems           RedeemedItem[]
+  cart                    Cart?
+  blogPosts               BlogPost[]
+  userNotifications       UserNotification[]
+  sessions                Session[]   // Relación uno a muchos con sesiones
+}
+
+model Admin {
+  id        String        @id @default(uuid()) @db.Uuid
+  userId    String        @unique @db.Uuid
+  type      AdminTypeEnum
+  active    Boolean       @default(true)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model TeachingResume {
+  id             String              @id @default(uuid()) @db.Uuid
+  userId         String              @unique @db.Uuid
+  teachingLevels TeachingLevelEnum[]
+  active         Boolean             @default(true)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  user         User                        @relation(fields: [userId], references: [id])
+  professor    Professor?
+  institutions TeachingResumeInstitution[]
+  subjects     TeachingResumeSubject[]
+}
+
+model Professor {
+  id                        String   @id @default(uuid()) @db.Uuid
+  userId                    String   @unique @db.Uuid
+  profilePicture            Json?
+  bio                       String?
+  dni                       String
+  dniType                   String
+  addressId                 String   @unique @db.Uuid
+  resumeId                  String   @unique @db.Uuid
+  userSocialsId             String   @unique @db.Uuid
+  notificationPreferencesId String   @unique @db.Uuid
+  privacyPreferencesId      String   @unique @db.Uuid
+  referralCode              String?  @unique
+  active                    Boolean  @default(true)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  user                    User                     @relation(fields: [userId], references: [id])
+  address                 Address                  @relation(fields: [addressId], references: [id])
+  resume                  TeachingResume?          @relation(fields: [resumeId], references: [id])
+  userSocials             UserSocials?             @relation(fields: [userSocialsId], references: [id])
+  notificationPreferences NotificationPreferences? @relation(fields: [notificationPreferencesId], references: [id])
+  privacyPreferences      PrivacyPreferences?      @relation(fields: [privacyPreferencesId], references: [id])
+
+  @@unique([dni, dniType])
+}
+
+model PrivacyPreferences {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @unique @db.Uuid
+  privateProfile  Boolean  @default(false)
+  showContactInfo Boolean  @default(true)
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id])
+  professor Professor?
+}
+
+model NotificationPreferences {
+  id                   String                 @id @default(uuid()) @db.Uuid
+  userId               String                 @unique @db.Uuid
+  promotions           Boolean                @default(true)
+  allowedNotifications NotificationTypeEnum[]
+  active               Boolean                @default(true)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id])
+  professor Professor?
+}
+
+model UserSocials {
+  id        String   @id @default(uuid()) @db.Uuid
+  instagram String?
+  x         String?
+  facebook  String?
+  linkedIn  String?
+  medium    String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  professors Professor[]
+}
+
+enum GUAOLevelEnum {
+  primaria
+  media
+  varios
+}
+
+model GUAOGrade {
+  id        String        @id @default(uuid()) @db.Uuid
+  name      String
+  level     GUAOLevelEnum
+  active    Boolean       @default(true)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  subjects GUAOSubject[]
+
+  @@unique([name, level])
+}
+
+model GUAOSubject {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  gradeId   String   @db.Uuid
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  grade    GUAOGrade     @relation(fields: [gradeId], references: [id])
+  contents GUAOContent[]
+
+  @@unique([gradeId, name])
+  @@index([gradeId])
+}
+
+model GUAOContent {
+  id        String   @id @default(uuid()) @db.Uuid
+  quarter   Int
+  subjectId String   @db.Uuid
+  content   String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subject GUAOSubject @relation(fields: [subjectId], references: [id])
+
+  @@index([subjectId])
+}
+
+model Topic {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tags        Tag[]
+  userTopics  UserTopic[]
+  groupTopics GroupTopic[]
+}
+
+model UserTopic {
+  userId    String   @db.Uuid
+  topicId   String   @db.Uuid
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id])
+  topic Topic @relation(fields: [topicId], references: [id])
+
+  @@id([userId, topicId])
+}
+
+model Tag {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  topicId   String   @db.Uuid
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  topic Topic @relation(fields: [topicId], references: [id])
+
+  @@unique([topicId, name])
+}
+
+model Group {
+  id                 String   @id @default(uuid()) @db.Uuid
+  name               String
+  groupImage         Json? //Multimedia
+  description        String
+  private            Boolean  @default(false)
+  invitationsEnabled Boolean  @default(true)
+  groupFounderId     String   @db.Uuid
+  active             Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  groupFounder User              @relation(fields: [groupFounderId], references: [id])
+  members      GroupMember[]
+  invitations  GroupInvitation[]
+  messages     Message[]
+  groupTopics  GroupTopic[]
+}
+
+model GroupTopic {
+  groupId   String   @db.Uuid
+  topicId   String   @db.Uuid
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  group Group @relation(fields: [groupId], references: [id])
+  topic Topic @relation(fields: [topicId], references: [id])
+
+  @@id([groupId, topicId])
+}
+
+model GroupMember {
+  memberId    String                @db.Uuid
+  groupId     String                @db.Uuid
+  permissions MemberPermissionsEnum
+  active      Boolean               @default(true)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  member User  @relation(fields: [memberId], references: [id])
+  group  Group @relation(fields: [groupId], references: [id])
+
+  @@id([memberId, groupId])
+}
+
+model GroupInvitation {
+  userId    String                    @db.Uuid
+  groupId   String                    @db.Uuid
+  status    GroupInvitationStatusEnum @default(pending)
+  active    Boolean                   @default(true)
+  createdAt DateTime                  @default(now())
+  updatedAt DateTime                  @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id])
+  group Group @relation(fields: [groupId], references: [id])
+
+  @@id([userId, groupId])
+}
+
+model Message {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @db.Uuid
+  groupId         String   @db.Uuid
+  message         String
+  attachments     Json? // Multimedia[] embedido como lista de URLs/ids
+  parentMessageId String?  @db.Uuid
+  stats           Json? // { likes: number, comments: number }
+  featured        Boolean  @default(false)
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user          User      @relation(fields: [userId], references: [id])
+  group         Group     @relation(fields: [groupId], references: [id])
+  parentMessage Message?  @relation("MessageReplies", fields: [parentMessageId], references: [id])
+  replies       Message[] @relation("MessageReplies")
+}
+
+model Reaction {
+  id            String                     @id @default(uuid()) @db.Uuid
+  userId        String                     @db.Uuid
+  type          ReactionTypesEnum
+  referenceType ReactionReferenceTypesEnum
+  referenceId   String                     @db.Uuid
+  createdAt     DateTime                   @default(now())
+  updatedAt     DateTime                   @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Report {
+  id            String                   @id @default(uuid()) @db.Uuid
+  userId        String                   @db.Uuid
+  referenceType ReportReferenceTypesEnum
+  referenceId   String                   @db.Uuid
+  number        String
+  status        ReportStatusEnum         @default(pending)
+  active        Boolean                  @default(true)
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model SavedItem {
+  id            String             @id @default(uuid()) @db.Uuid
+  userId        String             @db.Uuid
+  referenceType SavedItemTypesEnum
+  referenceId   String             @db.Uuid
+  active        Boolean            @default(true)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Country {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique
+  iso         String   @unique
+  phonePrefix String
+  flag        String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  institutions Institution[]
+  states       State[]
+  addresses    Address[]
+}
+
+model State {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  countryId String   @db.Uuid
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  country   Country   @relation(fields: [countryId], references: [id])
+  cities    City[]
+  addresses Address[]
+
+  @@unique([countryId, name])
+}
+
+model City {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  stateId   String   @db.Uuid
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  state     State     @relation(fields: [stateId], references: [id])
+  addresses Address[]
+
+  @@unique([stateId, name])
+}
+
+model Address {
+  id        String   @id @default(uuid()) @db.Uuid
+  countryId String   @db.Uuid
+  stateId   String   @db.Uuid
+  cityId    String   @db.Uuid
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  country   Country    @relation(fields: [countryId], references: [id])
+  state     State      @relation(fields: [stateId], references: [id])
+  city      City       @relation(fields: [cityId], references: [id])
+  professor Professor?
+}
+
+model TeachingResumeInstitution {
+  teachingResumeId String   @db.Uuid
+  institutionId    String   @db.Uuid
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  teachingResume TeachingResume @relation(fields: [teachingResumeId], references: [id])
+  institution    Institution    @relation(fields: [institutionId], references: [id])
+
+  @@id([teachingResumeId, institutionId])
+}
+
+model Institution {
+  id              String              @id @default(uuid()) @db.Uuid
+  name            String
+  countryId       String              @db.Uuid
+  institutionType InstitutionTypeEnum
+  active          Boolean             @default(true)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  country         Country                     @relation(fields: [countryId], references: [id])
+  teachingResumes TeachingResumeInstitution[]
+}
+
+model TeachingResumeSubject {
+  teachingResumeId String   @db.Uuid
+  subjectId        String   @db.Uuid
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  teachingResume TeachingResume @relation(fields: [teachingResumeId], references: [id])
+  subject        Subject        @relation(fields: [subjectId], references: [id])
+
+  @@id([teachingResumeId, subjectId])
+}
+
+model Subject {
+  id               String            @id @default(uuid()) @db.Uuid
+  name             String
+  institutionLevel TeachingLevelEnum
+  active           Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  teachingResumes TeachingResumeSubject[]
+}
+
+model UserReferral {
+  id            String                   @id @default(uuid()) @db.Uuid
+  referrerId    String                   @db.Uuid
+  referredEmail String
+  referralToken String                   @unique @default(uuid())
+  referredId    String?                  @db.Uuid
+  status        ReferralInvitationStatus @default(pending)
+  active        Boolean                  @default(true)
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+
+  referrer User  @relation("Referrer", fields: [referrerId], references: [id])
+  referred User? @relation("Referred", fields: [referredId], references: [id])
+}
+
+model Follow {
+  followerId String   @db.Uuid
+  followedId String   @db.Uuid
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  follower User @relation("Follower", fields: [followerId], references: [id])
+  followed User @relation("Followed", fields: [followedId], references: [id])
+
+  @@id([followerId, followedId])
+}
+
+model Content {
+  id                 String                 @id @default(uuid()) @db.Uuid
+  title              String
+  description        String
+  syllabus           String?
+  thumbnail          Json?
+  type               ContentTypeEnum
+  modality           ContentModalityEnum?
+  difficulty         ContentDifficultyEnum?
+  courseReferenceId  String?
+  attachments        Json // multimedia embebido
+  topics             Json // Topic[] embebido
+  tags               Json // Tag[] embebido
+  redemptionRequired Boolean                @default(false)
+  rewardXP           Int?
+  active             Boolean                @default(true)
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+
+  userContents       UserContent[]
+  ratings            Rating[]
+  leagueRestrictions LeagueRestriction[]
+  storeItems         StoreItem[]
+}
+
+model UserContent {
+  userId    String                @db.Uuid
+  contentId String                @db.Uuid
+  status    UserContentStatusEnum
+  active    Boolean               @default(true)
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id])
+  content Content @relation(fields: [contentId], references: [id])
+
+  @@id([userId, contentId])
+}
+
+model Rating {
+  userId    String   @db.Uuid
+  contentId String   @db.Uuid
+  rating    Decimal  @db.Decimal(2, 1)
+  testimony String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id])
+  content Content @relation(fields: [contentId], references: [id])
+
+  @@id([userId, contentId])
+}
+
+model League {
+  id               String   @id @default(uuid()) @db.Uuid
+  name             String
+  image            Json
+  badge            Json
+  minExperience    Int
+  experienceReward Int
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  leagueRestrictions LeagueRestriction[]
+  userExperiences    UserExperience[]
+}
+
+model LeagueRestriction {
+  id          String   @id @default(uuid()) @db.Uuid
+  contentId   String   @db.Uuid
+  minLeagueId String   @db.Uuid
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  content   Content @relation(fields: [contentId], references: [id])
+  minLeague League  @relation(fields: [minLeagueId], references: [id])
+}
+
+model UserExperience {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @unique @db.Uuid
+  currentXP       Int      @default(0)
+  currentLeagueId String   @db.Uuid
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user          User   @relation(fields: [userId], references: [id])
+  currentLeague League @relation(fields: [currentLeagueId], references: [id])
+}
+
+model HExperience {
+  id         String         @id @default(uuid()) @db.Uuid
+  userId     String         @db.Uuid
+  sourceType SourceTypeEnum
+  earnedXP   Int
+  active     Boolean        @default(true)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model HUserLeague {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  finalXP   Int
+  league    Json //Embebido para que guarde la experiencia por si la liga cambia
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Challenge {
+  id               String            @id @default(uuid()) @db.Uuid
+  title            String
+  description      String
+  experienceReward Int?
+  creditsReward    Int?
+  type             ChallengeTypeEnum
+  actionType       ActionTypeEnum
+  targetCount      Int               @default(1)
+  active           Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  cycles ChallengeCycle[]
+}
+
+model ChallengeCycle {
+  id          String    @id @default(uuid()) @db.Uuid
+  challengeId String    @db.Uuid
+  startDate   DateTime
+  endDate     DateTime?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  challenge      Challenge       @relation(fields: [challengeId], references: [id])
+  userChallenges UserChallenge[]
+}
+
+model UserChallenge {
+  userId    String             @db.Uuid
+  cycleId   String             @db.Uuid
+  progress  Int                @default(0)
+  state     ChallengeStateEnum @default(in_progress)
+  achivedAt DateTime?
+  active    Boolean            @default(true)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  user  User           @relation(fields: [userId], references: [id])
+  cycle ChallengeCycle @relation(fields: [cycleId], references: [id])
+
+  @@id([userId, cycleId])
+}
+
+model Badge {
+  id          String         @id @default(uuid()) @db.Uuid
+  name        String
+  description String
+  image       Json
+  actionType  ActionTypeEnum
+  targetCount Int            @default(1)
+  active      Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  userBadges UserBadge[]
+}
+
+model UserBadge {
+  userId    String   @db.Uuid
+  badgeId   String   @db.Uuid
+  progress  Int      @default(0)
+  earned    Boolean  @default(false)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id])
+  badge Badge @relation(fields: [badgeId], references: [id])
+
+  @@id([userId, badgeId])
+}
+
+model Event {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  link      String?
+  location  String?
+  ownerId   String   @db.Uuid
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner  User        @relation(fields: [ownerId], references: [id])
+  guests UserEvent[]
+}
+
+model UserEvent {
+  eventId      String           @db.Uuid
+  userId       String           @db.Uuid
+  inviteStatus InviteStatusEnum @default(pending)
+  active       Boolean          @default(true)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@id([eventId, userId])
+}
+
+model StoreItem {
+  id           String             @id @default(uuid()) @db.Uuid
+  name         String
+  description  String
+  image        Json?
+  type         StoreItemTypesEnum
+  price        Int
+  link         String?
+  contentId    String?            @db.Uuid
+  expireDate   DateTime?
+  daysToExpire Int?
+  active       Boolean            @default(true)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  content       Content?       @relation(fields: [contentId], references: [id])
+  cartItems     CartItem[]
+  redeemedItems RedeemedItem[]
+}
+
+model Cart {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique @db.Uuid
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id])
+  cartItems CartItem[]
+}
+
+model CartItem {
+  cartId      String   @db.Uuid
+  storeItemId String   @db.Uuid
+  priceAtAdd  Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cart      Cart      @relation(fields: [cartId], references: [id])
+  storeItem StoreItem @relation(fields: [storeItemId], references: [id])
+
+  @@id([cartId, storeItemId])
+}
+
+model RedeemedItem {
+  userId         String             @db.Uuid
+  itemId         String             @db.Uuid
+  redemptionCode String             @unique
+  expireDate     DateTime
+  status         RedeemedItemStatus
+  active         Boolean            @default(true)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  user User      @relation(fields: [userId], references: [id])
+  item StoreItem @relation(fields: [itemId], references: [id])
+
+  @@id([userId, itemId])
+}
+
+model BlogPost {
+  id            String             @id @default(uuid()) @db.Uuid
+  slug          String             @unique
+  title         String
+  summary       String
+  thumbnail     Json?
+  userId        String             @db.Uuid
+  structure     Json // Embedded BlogStructure[]
+  status        BlogPostStatusEnum
+  topicsRelated Json // Embedded Topic[]
+  private       Boolean            @default(false)
+  readTime      Int?
+  active        Boolean            @default(true)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Notification {
+  id            String                        @id @default(uuid()) @db.Uuid
+  type          NotificationTypeEnum
+  content       String
+  referenceType NotificationReferenceTypeEnum
+  referenceId   String                        @db.Uuid
+  active        Boolean                       @default(true)
+  createdAt     DateTime                      @default(now())
+  updatedAt     DateTime                      @updatedAt
+
+  userNotifications UserNotification[]
+}
+
+model UserNotification {
+  userId         String                     @db.Uuid
+  notificationId String                     @db.Uuid
+  status         UserNotificationStatusEnum
+  active         Boolean                    @default(true)
+  createdAt      DateTime                   @default(now())
+  updatedAt      DateTime                   @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id])
+  notification Notification @relation(fields: [notificationId], references: [id])
+
+  @@id([userId, notificationId])
+}
+
+
+//Sesion del usuario en bd
+
+model Session {
+  id             String       @id @default(uuid()) @db.Uuid
+  token          String       @unique
+  userId         String       @db.Uuid
+  userType       UserTypeEnum
+  ip             String       @db.VarChar(45)
+  device         Json
+  expirationDate DateTime
+  location       Json?
+  active         Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 

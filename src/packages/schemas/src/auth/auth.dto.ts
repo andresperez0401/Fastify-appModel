@@ -17,6 +17,11 @@ const logInInput = UserSchema.pick({
     password: true,
 });
 
+const emailInput = UserSchema.pick({
+    email: true,
+    type: true,
+});
+
 
 
 //este es el dto que se utilizara en el servicio y controlador
@@ -24,10 +29,12 @@ const logInInput = UserSchema.pick({
 export interface TAuthDTO {
     logInInput: z.infer<typeof logInInput>;
     signUpInput: z.infer<typeof signUpInput>;
+    emailInput: z.infer<typeof emailInput>;
 }
 
 //Hacemos el freeze para que no le puden modificar nada, solo usarlo como tipo
 export const AuthDTO = Object.freeze({
     logInInput,
     signUpInput,
+    emailInput,
 });

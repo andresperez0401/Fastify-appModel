@@ -1,9 +1,10 @@
 import fp from 'fastify-plugin';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import browserDetect from 'browser-detect';
 import {
     TUserDTO, UserDTO
 }from '../../packages/schemas/src/user/user.dto';
-import { TAuthDTO, AuthDTO } from '@/packages/schemas/src/auth/auth.dto';
+import { TAuthDTO, AuthDTO,  } from '@/packages/schemas/src/auth/auth.dto';
 
 //Le agregamos la propiedad authController al FastifyInstance
 declare module 'fastify' {
@@ -23,6 +24,7 @@ class AuthController {
 
         //Hay que bindear los metodos para que no pierdan el contexto
         this.signUp = this.signUp.bind(this);
+        this.checkEmail = this.checkEmail.bind(this);
         this.signIn = this.signIn.bind(this);
     }
 
@@ -43,16 +45,41 @@ class AuthController {
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------
 
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+//POST /auth/check-email
+//Funcion que se encarga de validar si un email ya esta registrado en la base de datos
 
-
-    async signIn(
-        request: FastifyRequest <{ Body: { email: string; password: string } }>,
+    async checkEmail(
+        request: FastifyRequest <{ Body: TAuthDTO['emailInput'] }>,
         reply: FastifyReply
     ) {
-        const { email, password } = request.body;
-        const token = await this.fastify.authService.signIn(email, password);
-        return { token };
+        const exists = await this.fastify.authService.checkEmail(request.body);
+        return { exists };
     }
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+//POST /auth/sign-in
+
+    async signIn(
+        request: FastifyRequest <{ Body: TAuthDTO['logInInput'] }>,
+        reply: FastifyReply
+    ) {
+
+        //Detectamos el navegador desde el user-agent
+        const browser = browserDetect(request.headers['user-agent']);
+
+        //Obtenemos la IP del request
+        const ip = request.ip;
+
+        const resp = await this.fastify.authService.signIn(request.body, browser, ip);
+
+        return resp;
+    }
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 }
 
 export default fp(
