@@ -3,16 +3,19 @@ import { seedTopics } from './seeds/topics';
 import { seedCountries } from './seeds/countries';
 import { seedStates } from './seeds/states';
 import { seedCities } from './seeds/cities';
+import { seedSubjects } from './seeds/subjects';
+
 
 const prisma = new PrismaClient();
 
 export async function seed() {
   try {
     console.log('🌱 Starting seed...');
-    await seedTopics(prisma);
-    await seedCountries(prisma);
-    await seedStates(prisma);
-    await seedCities(prisma);
+    //await seedTopics(prisma);
+    //await seedCountries(prisma);
+    //await seedStates(prisma);
+    //await seedCities(prisma);
+    await seedSubjects(prisma);
     console.log('🌱 Seed completed successfully!');
   } catch (e) {
     console.error('❌ Error during seeding:', e);

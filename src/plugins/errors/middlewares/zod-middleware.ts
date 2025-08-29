@@ -1,7 +1,6 @@
 import fp from 'fastify-plugin';
 import type { FastifyInstance } from 'fastify';
 import { ZodError, ZodObject } from 'zod';
-import { thrower } from '@/errors/thrower';
 
 export default fp(async (fastify: FastifyInstance) => {
   fastify.addHook('preValidation', async (req, reply) => {
